@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 
     PGconn *db;
     PGresult *res;
+    char *message;
 
     // Connect to database
     db = PQsetdbLogin("localhost", "5432", NULL, NULL, DBNAME, DBUSER, DBPASS);
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
     
     while(1)
     {
-        menu();
+        menu();  //display the menu and wait for the user to choose
 
         char *choice = readline("Your choice: ");
         switch(choice[0])
@@ -52,7 +53,6 @@ int main(int argc, char *argv[])
             case 'P':
             case 'p':
                 // Handle 'p' case: Post a Tweet
-                char *message;
     		message = readline("Enter tweet: ");
 
 	        // Construct query
@@ -74,25 +74,18 @@ int main(int argc, char *argv[])
             case 'a':
                // Handle 'a' case: Read all tweets
                {
-                  /* char *username;
-                   username = readline("Username to look up: ");
+		     res = PQexec(db, "select msg from tweet");
+		    int rows = PQntuples(res);
+		    printf("\nGetting %d rows\n", rows);
 
-                   // Get user information
-                   struct passwd *pw;
-                   pw = getpwnam(username);
+		    for (int i = 0; i < rows; i++)
+		    {
+		        char *msg = PQgetvalue(res, i, 0);
+		        printf("%s\n", msg);
+		    }
+			printf("\n");
+		}       
 
-                   if (!pw)
-                   {
-                       printf("Unknown user.\n");
-                   }
-                   else
-                   {
-                       // Print out user information
-                       printf("User ID: %d\n", pw->pw_uid);
-                       printf("Full name: %s\n", pw->pw_gecos);
-                       printf("Home directory: %s\n", pw->pw_dir);
-                   } */
-                }
                 break;
 
 	    case 'U':
@@ -112,7 +105,8 @@ int main(int argc, char *argv[])
                // Handle everything else
 
         }
-
+}
+}
 
 
 /*    // Get tweet from user
@@ -146,6 +140,7 @@ int main(int argc, char *argv[])
 
     // Clean up
     PQclear(res);
+
     PQfinish(db);
 }
 */
