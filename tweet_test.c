@@ -30,6 +30,9 @@ int main(int argc, char *argv[])
     PGconn *db;
     PGresult *res;
     char *message;
+    char *user;
+    float lat;
+    float lon;
 
     // Connect to database
     db = PQsetdbLogin("localhost", "5432", NULL, NULL, DBNAME, DBUSER, DBPASS);
@@ -54,10 +57,12 @@ int main(int argc, char *argv[])
             case 'p':
                 // Handle 'p' case: Post a Tweet
     		message = readline("Enter tweet: ");
+		printf("Enter latitude, longitude:\n");
+		scanf("%f,%f", &lat, &lon);	
 
 	        // Construct query
 	        char query[300];
-	        sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), null, null)", message);
+	        sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), '%f', '%f')", message, lat,lon);
 	        res = PQexec(db, query);
 	        if (PQresultStatus(res) == PGRES_COMMAND_OK)
 	        {
@@ -91,7 +96,23 @@ int main(int argc, char *argv[])
 	    case 'U':
             case 'u':
                 // Handle 'u' case: Read tweets from a particular user
-                /*print_my_info(); */
+ 		{
+		    user = readline("Enter user: ");
+
+		    sprintf(query, "select msg from tweet where username = '%s'", user);
+                    res = PQexec(db, query);
+
+                    //res = PQexec(db, "select msg from tweet where username = '%s'"), user;
+                    int rows = PQntuples(res);
+                    printf("\nGetting %d rows\n", rows);
+
+                    for (int i = 0; i < rows; i++)
+                    {
+                        char *msg = PQgetvalue(res, i, 0);
+                        printf("%s\n", msg);
+                    }
+                        printf("\n");
+                }
                 break;
 
             case 'Q':
@@ -108,35 +129,7 @@ int main(int argc, char *argv[])
 }
 }
 
-
-/*    // Get tweet from user
-    char *message;
-    message = readline("Enter tweet: ");
-
-    // Construct query
-    char query[300];
-    sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), null, null)", message);
-    res = PQexec(db, query);
-    if (PQresultStatus(res) == PGRES_COMMAND_OK)
-    {
-        printf("INSERT succeeded\n");
-    }
-    else
-    {
-        printf("INSERT failed\n");
-    }
-    PQclear(res);
-
-    // Get all tweets from database
-    res = PQexec(db, "select msg from tweet");
-    int rows = PQntuples(res);
-    printf("Getting %d rows\n", rows);
-
-    for (int i = 0; i < rows; i++)
-    {
-        char *msg = PQgetvalue(res, i, 0);
-	printf("%s\n", msg);
-    }
+/*
 
     // Clean up
     PQclear(res);
