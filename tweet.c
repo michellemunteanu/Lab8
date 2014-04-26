@@ -31,8 +31,9 @@ int main(int argc, char *argv[])
     PGresult *res;
     char *message;
     char *username;
-    float lat;
-    float lon;
+    float lat=0.00;
+    float lon=0.00;
+    char *ll;
 
     // Connect to database
     db = PQsetdbLogin("localhost", "5432", NULL, NULL, DBNAME, DBUSER, DBPASS);
@@ -57,9 +58,15 @@ int main(int argc, char *argv[])
             case 'p':
                 // Handle 'p' case: Post a Tweet
     		message = readline("Enter tweet: ");
+		int length = strlen(message);
+		if (length > 140)
+		{
+		    message[140]='\0';
+		}
 		printf("Enter latitude, longitude:\n");
-		scanf("%f,%f", &lat, &lon);	
-
+		{
+		scanf("%f, %f", &lat, &lon);	
+		}
 	        // Construct query
 	        char query[300];
 	        sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), '%f', '%f')", message, lat,lon);
