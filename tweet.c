@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 		    else
 		    {
 			
-			sprintf(query, "select msg, ts from tweet where username = '%s' order by ts desc", username);
+			sprintf(query, "select msg, ts, lat, lon from tweet where username = '%s' order by ts desc", username);
                         res = PQexec(db, query);
 
                         int rows = PQntuples(res);
@@ -120,7 +120,14 @@ int main(int argc, char *argv[])
 			    char *msg = PQgetvalue(res, i, 0);
                             printf("%s\n", msg);
 			    char *tim = PQgetvalue(res, i, 1);
-			    printf("%.16s\n\n", tim);
+			    char *la = PQgetvalue(res, i, 2);
+			    char *lo = PQgetvalue(res, i, 3);
+			    printf("%.16s", tim);
+			    if(la[0])
+			    {
+			    printf(" (%s, %s)", la, lo);
+			    }
+			    printf("\n\n");
                         }
                         printf("\n");
 
@@ -158,14 +165,10 @@ int main(int argc, char *argv[])
 
         }
 }
-}
-
-/*
 
     // Clean up
     PQclear(res);
 
     PQfinish(db);
 }
-*/
 
