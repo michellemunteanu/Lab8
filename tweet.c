@@ -79,16 +79,28 @@ int main(int argc, char *argv[])
             case 'a':
                // Handle 'a' case: Read all tweets
                {
-		     res = PQexec(db, "select msg from tweet order by ts desc");
+		    sprintf(query, "select msg, ts, lat, lon, username from tweet order by ts desc");
+                    res = PQexec(db, query);
+		    
 		    int rows = PQntuples(res);
-		    printf("\nGetting %d rows\n", rows);
-
+		    printf("\n");
 		    for (int i = 0; i < rows; i++)
 		    {
 		        char *msg = PQgetvalue(res, i, 0);
-		        printf("%s\n", msg);
+		        char *tim = PQgetvalue(res, i, 1);
+		        char *la = PQgetvalue(res, i, 2);
+		        char *lo = PQgetvalue(res, i, 3);
+			char *un = PQgetvalue(res, i, 4);
+			printf("@%s\n", un);
+			printf("%s\n", msg);
+		        printf("%.16s", tim);
+		        if(la[0])
+		        {
+		        printf(" (%s, %s)", la, lo);
+		        }
+		        printf("\n\n");
 		    }
-			printf("\n");
+		    printf("\n");
 		}       
 	        PQclear(res);
                 break;
@@ -108,15 +120,15 @@ int main(int argc, char *argv[])
 		    else
 		    {
 			
-			sprintf(query, "select msg, ts, lat, lon from tweet where username = '%s' order by ts desc", username);
+			sprintf(query, "select msg, ts, lat, lon, username from tweet where username = '%s' order by ts desc", username);
                         res = PQexec(db, query);
 
                         int rows = PQntuples(res);
-                        printf("\nGetting %d rows\n", rows);
-
+			printf("\n");
                         for (int i = 0; i < rows; i++)
                         {
-			    printf("@%s\n", pw->pw_gecos);
+			    char *un = PQgetvalue(res, i, 4);
+			    printf("@%s\n", un);
 			    char *msg = PQgetvalue(res, i, 0);
                             printf("%s\n", msg);
 			    char *tim = PQgetvalue(res, i, 1);
@@ -125,29 +137,14 @@ int main(int argc, char *argv[])
 			    printf("%.16s", tim);
 			    if(la[0])
 			    {
-			    printf(" (%s, %s)", la, lo);
+			        printf(" (%s, %s)", la, lo);
 			    }
 			    printf("\n\n");
                         }
                         printf("\n");
 
-//printf("@%s\n", pw->pw_gecos);
 		    }		    
-
-	/*	    sprintf(query, "select msg from tweet where username = '%s'", username);
-                    res = PQexec(db, query);
-
-                    int rows = PQntuples(res);
-                    printf("\nGetting %d rows\n", rows);
-
-                    for (int i = 0; i < rows; i++)
-                    {
-                        char *msg = PQgetvalue(res, i, 0);
-                        printf("%s\n", msg);
-                    }
-                        printf("\n");
-          */      }
-
+		}
 	        PQclear(res);
                 break;
 
@@ -164,11 +161,10 @@ int main(int argc, char *argv[])
                // Handle everything else
 
         }
-}
+    }
 
     // Clean up
     PQclear(res);
-
     PQfinish(db);
 }
 
