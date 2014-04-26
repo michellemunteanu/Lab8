@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
             case 'a':
                // Handle 'a' case: Read all tweets
                {
-		     res = PQexec(db, "select msg from tweet");
+		     res = PQexec(db, "select msg from tweet order by ts desc");
 		    int rows = PQntuples(res);
 		    printf("\nGetting %d rows\n", rows);
 
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 		    else
 		    {
 			
-			sprintf(query, "select msg from tweet where username = '%s'", username);
+			sprintf(query, "select msg, ts from tweet where username = '%s' order by ts desc", username);
                         res = PQexec(db, query);
 
                         int rows = PQntuples(res);
@@ -119,6 +119,8 @@ int main(int argc, char *argv[])
 			    printf("@%s\n", pw->pw_gecos);
 			    char *msg = PQgetvalue(res, i, 0);
                             printf("%s\n", msg);
+			    char *tim = PQgetvalue(res, i, 1);
+			    printf("%.16s\n\n", tim);
                         }
                         printf("\n");
 
