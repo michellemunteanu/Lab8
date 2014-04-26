@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 		    }
 			printf("\n");
 		}       
-
+	        PQclear(res);
                 break;
 
 	    case 'U':
@@ -102,7 +102,6 @@ int main(int argc, char *argv[])
 		    sprintf(query, "select msg from tweet where username = '%s'", user);
                     res = PQexec(db, query);
 
-                    //res = PQexec(db, "select msg from tweet where username = '%s'"), user;
                     int rows = PQntuples(res);
                     printf("\nGetting %d rows\n", rows);
 
@@ -113,12 +112,15 @@ int main(int argc, char *argv[])
                     }
                         printf("\n");
                 }
+	        PQclear(res);
                 break;
 
             case 'Q':
             case 'q':
                // Handle 'q' case
                exit(0);
+	       PQclear(res);
+	       PQfinish(db); //close the connection
                break;
 
             default:
