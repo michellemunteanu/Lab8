@@ -31,9 +31,9 @@ int main(int argc, char *argv[])
     PGresult *res;
     char *message;
     char *username;
-    float lat=0.00;
-    float lon=0.00;
-    char *ll;
+    char *lat;
+    char *lon;
+ 
 
     // Connect to database
     db = PQsetdbLogin("localhost", "5432", NULL, NULL, DBNAME, DBUSER, DBPASS);
@@ -63,13 +63,21 @@ int main(int argc, char *argv[])
 		{
 		    message[140]='\0';
 		}
-		printf("Enter latitude, longitude:\n");
-		{
-		scanf("%f, %f", &lat, &lon);	
-		}
+
+		lat = readline("Enter latitude: ");
+		lon = readline("Enter longitude: ");
+		
 	        // Construct query
 	        char query[300];
-	        sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), '%f', '%f')", message, lat,lon);
+
+		if ((strlen(lat)==0) || (strlen(lon)==0)) 		
+		{
+		    sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), NULL, NULL)", message);
+		}
+		else
+		{
+	            sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), '%s', '%s')", message, lat, lon);
+		}
 	        res = PQexec(db, query);
 	        if (PQresultStatus(res) == PGRES_COMMAND_OK)
 	        {
