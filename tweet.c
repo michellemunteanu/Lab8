@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 
-#define DBNAME "mkaiser4"
+#define DBNAME "twitter"
 #define DBUSER "mkaiser4"
 #define DBPASS "munt6502"
 
@@ -131,6 +131,8 @@ int main(int argc, char *argv[])
 		    if (!pw)
 		    {
 			printf("Unknown user.\n");
+			printf("\n");
+			break;
 		    }
 		    else
 		    {
