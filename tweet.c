@@ -21,6 +21,7 @@ void menu()
     printf("p) Post a tweet\n");
     printf("a) Read all tweets\n");
     printf("u) Read tweets from a particular user\n");
+    printf("s) Search\n");
     printf("q) Quit\n");
 }
 
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
     PGconn *db;
     PGresult *res;
     char *message;
+    char *keyword;
     char *username;
     char *lat;
     char *lon;
@@ -164,6 +166,44 @@ int main(int argc, char *argv[])
 		}
 	        PQclear(res);
                 break;
+
+	    case 'S':
+            case 's':
+                // Handle 's' case: Search tweets for a particular keyword
+                {
+                    keyword = readline("Enter keyword: ");
+//need to handle when search results are empty
+
+                        sprintf(query, "select twuser.username, twuser.displayname, msg, ts, lat, lon from tweet join twuser on twuser.username = tweet.username where msg like '%%%s%%' or twuser.username = '%s'", keyword, keyword);
+                        res = PQexec(db, query);
+			////*********
+                        int rows = PQntuples(res);
+                        printf("\n");
+                        for (int i = 0; i < rows; i++)
+                        {
+                            char *un = PQgetvalue(res, i, 0);
+                            printf("@%s\n", un);
+			    char *dn = PQgetvalue(res, i, 1);
+                            printf("%s\n", dn);
+                            char *msg = PQgetvalue(res, i, 2);
+                            printf("%s\n", msg);
+                            char *tim = PQgetvalue(res, i, 3);
+                            char *la = PQgetvalue(res, i, 4);
+                            char *lo = PQgetvalue(res, i, 5);
+                            printf("%.16s", tim);
+                            if(la[0]) //this might need some fixing here--maybe eliminate?
+                            {
+                                printf(" (%s, %s)", la, lo);
+                            }
+                            printf("\n\n");
+                        }
+                        printf("\n");
+
+                }
+                PQclear(res);
+                break;
+
+//
 
             case 'Q':
             case 'q':
