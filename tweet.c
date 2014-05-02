@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
     char *username;
     char *lat;
     char *lon;
+    char *login;
+    char *passwd;
  
 
     // Connect to database
@@ -51,6 +53,8 @@ int main(int argc, char *argv[])
     
     while(1)
     {
+	login = readline("Enter username: ");
+	passwd = readline("Enter password: ");
         menu();  //display the menu and wait for the user to choose
 
         char *choice = readline("Your choice: ");
@@ -75,10 +79,12 @@ int main(int argc, char *argv[])
 		if ((strlen(lat)==0) || (strlen(lon)==0)) 		
 		{
 		    sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), NULL, NULL)", message);
+		    //sprintf(query, "insert into tweet values (default, '%s', '%s', now(), NULL, NULL)", login, message);
 		}
 		else
 		{
 	            sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), '%s', '%s')", message, lat, lon);
+	            //sprintf(query, "insert into tweet values (default, '%s', '%s', now(), '%s', '%s')", login, message, lat, lon);
 		}
 	        res = PQexec(db, query);
 	        if (PQresultStatus(res) == PGRES_COMMAND_OK)
