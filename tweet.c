@@ -37,7 +37,8 @@ int main(int argc, char *argv[])
     char *lon;
     char *login;
     char *passwd;
- 
+    char query[300];
+
 
     // Connect to database
     db = PQsetdbLogin("localhost", "5432", NULL, NULL, DBNAME, DBUSER, DBPASS);
@@ -51,10 +52,27 @@ int main(int argc, char *argv[])
 	exit(1);
     }
     
+	login = readline("Enter username: ");
+	passwd = getpass("Enter password: ");
+
+	sprintf(query, "select count (*) from twuser where username = '%s' and password = md5('%s')", login, passwd);
+	//select count (*) from twuser where username = 'michelle' and password = (md5('abcde'))
+	res = PQexec(db, query); 
+	int ver = atof(PQgetvalue(res, 0, 0));
+        printf("ver %d\n", ver); //remove this later
+	printf("passwd %s\n", passwd); //remove this later
+	if (ver == 0)  //invalid login
+        {
+	    printf("Incorrect username or password\n");
+            exit(1);
+        }
+        else
+        {
+            printf("Hello, %s!\n", login);
+        }
+
     while(1)
     {
-	login = readline("Enter username: ");
-	passwd = readline("Enter password: ");
         menu();  //display the menu and wait for the user to choose
 
         char *choice = readline("Your choice: ");
@@ -74,17 +92,17 @@ int main(int argc, char *argv[])
 		lon = readline("Enter longitude: ");
 		
 	        // Construct query
-	        char query[300];
+	    //    char query[300];
 
 		if ((strlen(lat)==0) || (strlen(lon)==0)) 		
 		{
-		    sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), NULL, NULL)", message);
-		    //sprintf(query, "insert into tweet values (default, '%s', '%s', now(), NULL, NULL)", login, message);
+		    //sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), NULL, NULL)", message);
+		    sprintf(query, "insert into tweet values (default, '%s', '%s', now(), NULL, NULL)", login, message);
 		}
 		else
 		{
-	            sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), '%s', '%s')", message, lat, lon);
-	            //sprintf(query, "insert into tweet values (default, '%s', '%s', now(), '%s', '%s')", login, message, lat, lon);
+	            //sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), '%s', '%s')", message, lat, lon);
+	            sprintf(query, "insert into tweet values (default, '%s', '%s', now(), '%s', '%s')", login, message, lat, lon);
 		}
 	        res = PQexec(db, query);
 	        if (PQresultStatus(res) == PGRES_COMMAND_OK)
@@ -214,7 +232,7 @@ int main(int argc, char *argv[])
             case 'Q':
             case 'q':
                // Handle 'q' case
-               exit(0);
+               exit(1);
 	       PQclear(res);
 	       PQfinish(db); //close the connection
                break;
