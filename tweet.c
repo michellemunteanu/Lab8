@@ -30,14 +30,14 @@ int main(int argc, char *argv[])
 
     PGconn *db;
     PGresult *res;
-    char *message;
-    char *keyword;
-    char *username;
+    char *message; //the tweet to be posted
+    char *keyword; //keyword to search for
+    char *username; //this username is used when searching for tweets
     char *lat;
     char *lon;
-    char *login;
+    char *login; //this is the username used to log in
     char *passwd;
-    char query[300];
+    char query[500];
 
 
     // Connect to database
@@ -61,15 +61,16 @@ int main(int argc, char *argv[])
 	int ver = atof(PQgetvalue(res, 0, 0));
         printf("ver %d\n", ver); //remove this later
 	printf("passwd %s\n", passwd); //remove this later
-	if (ver == 0)  //invalid login
+	
+	if (ver == 1)  //valid login
         {
-	    printf("Incorrect username or password\n");
+	    printf("Hello, %s!\n", login);
+        }
+        else //invalid login
+        {
+            printf("Incorrect username or password\n");
             exit(1);
-        }
-        else
-        {
-            printf("Hello, %s!\n", login);
-        }
+	}
 
     while(1)
     {
@@ -91,10 +92,8 @@ int main(int argc, char *argv[])
 		lat = readline("Enter latitude: ");
 		lon = readline("Enter longitude: ");
 		
-	        // Construct query
-	    //    char query[300];
 
-		if ((strlen(lat)==0) || (strlen(lon)==0)) 		
+		if ((strlen(lat)==0) || (strlen(lon)==0)) //if user doesn't include lat and lon		
 		{
 		    //sprintf(query, "insert into tweet values (default, 'mkaiser4', '%s', now(), NULL, NULL)", message);
 		    sprintf(query, "insert into tweet values (default, '%s', '%s', now(), NULL, NULL)", login, message);
@@ -120,18 +119,19 @@ int main(int argc, char *argv[])
             case 'a':
                // Handle 'a' case: Read all tweets
                {
-		    sprintf(query, "select msg, ts, lat, lon, username from tweet order by ts desc");
+		    //sprintf(query, "select msg, ts, lat, lon, username from tweet order by ts desc");
+		    sprintf(query, "select twuser.username, twuser.displayname, msg, ts, lat, lon from tweet join twuser on twuser.username = tweet.username order by ts desc");
                     res = PQexec(db, query);
 		    
 		    int rows = PQntuples(res);
 		    printf("\n");
 		    for (int i = 0; i < rows; i++)
 		    {
-		        char *msg = PQgetvalue(res, i, 0);
-		        char *tim = PQgetvalue(res, i, 1);
-		        char *la = PQgetvalue(res, i, 2);
-		        char *lo = PQgetvalue(res, i, 3);
-			char *un = PQgetvalue(res, i, 4);
+		        char *msg = PQgetvalue(res, i, 2);
+		        char *tim = PQgetvalue(res, i, 3);
+		        char *la = PQgetvalue(res, i, 4);
+		        char *lo = PQgetvalue(res, i, 5);
+			char *un = PQgetvalue(res, i, 0);
 			printf("@%s\n", un);
 			printf("%s\n", msg);
 		        printf("%.16s", tim);
@@ -151,32 +151,22 @@ int main(int argc, char *argv[])
                 // Handle 'u' case: Read tweets from a particular user
  		{
 		    username = readline("Enter user: ");
-		    
-		    struct passwd *pw;
-		    pw = getpwnam(username);
-		    if (!pw)
-		    {
-			printf("Unknown user.\n");
-			printf("\n");
-			break;
-		    }
-		    else
-		    {
 			
-			sprintf(query, "select msg, ts, lat, lon, username from tweet where username = '%s' order by ts desc", username);
+			//sprintf(query, "select msg, ts, lat, lon, username from tweet where username = '%s' order by ts desc", username);
+			sprintf(query, "select twuser.username, twuser.displayname, msg, ts, lat, lon from tweet join twuser on twuser.username = tweet.username where twuser.username = '%s' order by ts desc", username);
                         res = PQexec(db, query);
 
                         int rows = PQntuples(res);
 			printf("\n");
                         for (int i = 0; i < rows; i++)
                         {
-			    char *un = PQgetvalue(res, i, 4);
+			    char *un = PQgetvalue(res, i, 0);
 			    printf("@%s\n", un);
-			    char *msg = PQgetvalue(res, i, 0);
+			    char *msg = PQgetvalue(res, i, 2);
                             printf("%s\n", msg);
-			    char *tim = PQgetvalue(res, i, 1);
-			    char *la = PQgetvalue(res, i, 2);
-			    char *lo = PQgetvalue(res, i, 3);
+			    char *tim = PQgetvalue(res, i, 3);
+			    char *la = PQgetvalue(res, i, 4);
+			    char *lo = PQgetvalue(res, i, 5);
 			    printf("%.16s", tim);
 			    if(la[0])
 			    {
@@ -185,8 +175,6 @@ int main(int argc, char *argv[])
 			    printf("\n\n");
                         }
                         printf("\n");
-
-		    }		    
 		}
 	        PQclear(res);
                 break;
